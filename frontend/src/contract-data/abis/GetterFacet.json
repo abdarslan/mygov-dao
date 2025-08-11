@@ -1,0 +1,322 @@
+[
+  {
+    "type": "function",
+    "name": "getIsProjectFunded",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": "funded"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNoOfFundedProjects",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "numfunded"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNoOfProjectProposals",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "numproposals"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNoOfSurveys",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "numsurveys"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNumOfMembers",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "numMembers"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNumOfVotes",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "yes"
+      },
+      {
+        "type": "uint256",
+        "name": "no"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getNumOfVotesPayment",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "yes"
+      },
+      {
+        "type": "uint256",
+        "name": "no"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProjectEligibleForPayment",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": "eligible"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProjectInfo",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "activityid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "weburl"
+      },
+      {
+        "type": "uint256",
+        "name": "votedeadline"
+      },
+      {
+        "type": "uint256[]",
+        "name": "paymentamounts"
+      },
+      {
+        "type": "uint256[]",
+        "name": "payschedule"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProjectNextTLPayment",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "int256",
+        "name": "next"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProjectOwner",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": "projectowner"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getSurveyInfo",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "weburl"
+      },
+      {
+        "type": "uint256",
+        "name": "surveydeadline"
+      },
+      {
+        "type": "uint256",
+        "name": "numchoices"
+      },
+      {
+        "type": "uint256",
+        "name": "atmostchoice"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getSurveyOwner",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": "surveyowner"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getSurveyResults",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "numtaken"
+      },
+      {
+        "type": "uint256[]",
+        "name": "results"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getTLReceivedByProject",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "amount"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "isMember",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "user"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": "result"
+      }
+    ]
+  }
+]

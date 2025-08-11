@@ -1,0 +1,88 @@
+[
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "MembershipChanged",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "member",
+        "indexed": true
+      },
+      {
+        "type": "bool",
+        "name": "isMember",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "totalMembers",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "SurveySubmitted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "surveyowner",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "submitSurvey",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "string",
+        "name": "weburl"
+      },
+      {
+        "type": "uint256",
+        "name": "surveydeadline"
+      },
+      {
+        "type": "uint256",
+        "name": "numchoices"
+      },
+      {
+        "type": "uint256",
+        "name": "atmostchoice"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "takeSurvey",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "surveyid"
+      },
+      {
+        "type": "uint256[]",
+        "name": "choices"
+      }
+    ],
+    "outputs": []
+  }
+]

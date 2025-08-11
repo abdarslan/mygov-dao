@@ -1,0 +1,20 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployer": "0xe143A97425A7E0E576170225d892FACcB0526D6E",
+  "timestamp": "2025-08-11T16:24:14.165Z",
+  "gasUsed": {
+    "TLToken": "0.000536267",
+    "DiamondCutFacet": "0.001021071",
+    "MyGov": "0.000310649",
+    "DiamondInit": "0.000481339",
+    "DiamondLoupeFacet": "0.000463719",
+    "OwnershipFacet": "0.000147395",
+    "GovFacet": "0.002595245",
+    "ERC20Facet": "0.000777594",
+    "GetterFacet": "0.00063987",
+    "SurveyFacet": "0.000908855",
+    "DonationFacet": "0.000663423",
+    "DiamondCut": "0.002118526"
+  }
+}

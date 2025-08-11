@@ -1,0 +1,258 @@
+[
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "DelegateSet",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "delegator",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "delegatee",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "MembershipChanged",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "user",
+        "indexed": true
+      },
+      {
+        "type": "bool",
+        "name": "isMember",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "memberCount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "MembershipChanged",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "member",
+        "indexed": true
+      },
+      {
+        "type": "bool",
+        "name": "isMember",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "totalMembers",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectGrantReserved",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectPaymentWithdrawn",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "recipient",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectSubmitted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "string",
+        "name": "weburl",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Voted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "voter",
+        "indexed": true
+      },
+      {
+        "type": "bool",
+        "name": "choice",
+        "indexed": false
+      },
+      {
+        "type": "bool",
+        "name": "forPayment",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "delegateVoteTo",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "memberaddr"
+      },
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "reserveProjectGrant",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "submitProjectProposal",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "string",
+        "name": "weburl"
+      },
+      {
+        "type": "uint256",
+        "name": "votedeadline"
+      },
+      {
+        "type": "uint256[]",
+        "name": "paymentamounts"
+      },
+      {
+        "type": "uint256[]",
+        "name": "payschedule"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "voteForProjectPayment",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      },
+      {
+        "type": "bool",
+        "name": "choice"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "voteForProjectProposal",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      },
+      {
+        "type": "bool",
+        "name": "choice"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "withdrawProjectTLPayment",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectid"
+      }
+    ],
+    "outputs": []
+  }
+]
