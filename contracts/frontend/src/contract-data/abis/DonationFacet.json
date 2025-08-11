@@ -1,0 +1,5 @@
+[
+  "event TokensDonated(address indexed donor, address indexed token, uint256 amount)",
+  "function donateMyGovToken(uint256 amount)",
+  "function donateTLToken(uint256 amount)"
+]

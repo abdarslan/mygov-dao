@@ -1,0 +1,6 @@
+[
+  "event MembershipChanged(address indexed member, bool isMember, uint256 totalMembers)",
+  "event SurveySubmitted(uint256 indexed surveyid, address indexed surveyowner)",
+  "function submitSurvey(string weburl, uint256 surveydeadline, uint256 numchoices, uint256 atmostchoice) returns (uint256 surveyid)",
+  "function takeSurvey(uint256 surveyid, uint256[] choices)"
+]

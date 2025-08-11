@@ -1,0 +1,15 @@
+[
+  "event DelegateSet(uint256 indexed projectId, address indexed delegator, address indexed delegatee)",
+  "event MembershipChanged(address indexed user, bool isMember, uint256 memberCount)",
+  "event MembershipChanged(address indexed member, bool isMember, uint256 totalMembers)",
+  "event ProjectGrantReserved(uint256 indexed projectId)",
+  "event ProjectPaymentWithdrawn(uint256 indexed projectId, address indexed recipient, uint256 amount)",
+  "event ProjectSubmitted(uint256 indexed projectId, address indexed owner, string weburl)",
+  "event Voted(uint256 indexed projectId, address indexed voter, bool choice, bool forPayment)",
+  "function delegateVoteTo(address memberaddr, uint256 projectid)",
+  "function reserveProjectGrant(uint256 projectid)",
+  "function submitProjectProposal(string weburl, uint256 votedeadline, uint256[] paymentamounts, uint256[] payschedule) returns (uint256 projectid)",
+  "function voteForProjectPayment(uint256 projectid, bool choice)",
+  "function voteForProjectProposal(uint256 projectid, bool choice)",
+  "function withdrawProjectTLPayment(uint256 projectid)"
+]

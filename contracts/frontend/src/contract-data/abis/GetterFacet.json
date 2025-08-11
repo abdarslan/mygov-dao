@@ -1,0 +1,18 @@
+[
+  "function getIsProjectFunded(uint256 projectid) view returns (bool funded)",
+  "function getNoOfFundedProjects() view returns (uint256 numfunded)",
+  "function getNoOfProjectProposals() view returns (uint256 numproposals)",
+  "function getNoOfSurveys() view returns (uint256 numsurveys)",
+  "function getNumOfMembers() view returns (uint256 numMembers)",
+  "function getNumOfVotes(uint256 projectid) view returns (uint256 yes, uint256 no)",
+  "function getNumOfVotesPayment(uint256 projectid) view returns (uint256 yes, uint256 no)",
+  "function getProjectEligibleForPayment(uint256 projectid) view returns (bool eligible)",
+  "function getProjectInfo(uint256 activityid) view returns (string weburl, uint256 votedeadline, uint256[] paymentamounts, uint256[] payschedule)",
+  "function getProjectNextTLPayment(uint256 projectid) view returns (int256 next)",
+  "function getProjectOwner(uint256 projectid) view returns (address projectowner)",
+  "function getSurveyInfo(uint256 surveyid) view returns (string weburl, uint256 surveydeadline, uint256 numchoices, uint256 atmostchoice)",
+  "function getSurveyOwner(uint256 surveyid) view returns (address surveyowner)",
+  "function getSurveyResults(uint256 surveyid) view returns (uint256 numtaken, uint256[] results)",
+  "function getTLReceivedByProject(uint256 projectid) view returns (uint256 amount)",
+  "function isMember(address user) view returns (bool result)"
+]
