@@ -1,0 +1,25 @@
+/* Global CSS overrides for modal-aware popovers */
+[data-slot="popover-content"] {
+  z-index: 99999 !important;
+  position: fixed !important;
+}
+
+/* Ensure popovers in modal contexts have the highest z-index */
+[role="dialog"] ~ [data-radix-popper-content-wrapper] [data-slot="popover-content"],
+.modal ~ [data-radix-popper-content-wrapper] [data-slot="popover-content"],
+[data-radix-dialog-content] ~ [data-radix-popper-content-wrapper] [data-slot="popover-content"] {
+  z-index: 999999 !important;
+}
+
+/* Radix Popover Portal overrides */
+[data-radix-popper-content-wrapper] {
+  z-index: 99999 !important;
+}
+
+/* Additional modal context overrides */
+body:has([role="dialog"]) [data-slot="popover-content"],
+body:has(.modal) [data-slot="popover-content"],
+body:has([data-radix-dialog-content]) [data-slot="popover-content"] {
+  z-index: 999999 !important;
+  position: fixed !important;
+}

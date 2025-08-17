@@ -1,35 +1,92 @@
-import { useState } from 'react'
 import './App.css'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import ProjectPage from './pages/ProjectPage.tsx'
+import { ProjectPage } from './pages/ProjectPage.tsx'
 import SurveyPage from './pages/SurveyPage.tsx'
 import TokenPage from './pages/TokenPage.tsx'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Link } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function App() {
-
-
   return (
-  <Router>
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">MyGov DAO Frontend</h1>
-      <ConnectButton />
-      {/* Add your DAO components here */}
-      <nav className="mb-4 space-x-4">
-        <Link to="/" className="text-blue-500 hover:underline">Home</Link>
-        <Link to="/projects" className="text-blue-500 hover:underline">Projects</Link>
-        <Link to="/surveys" className="text-blue-500 hover:underline">Surveys</Link>
-        <Link to="/tokens" className="text-blue-500 hover:underline">Tokens</Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<ProjectPage />} />
-        <Route path="/projects" element={<ProjectPage />} />
-        <Route path="/surveys" element={<SurveyPage />} />
-        <Route path="/tokens" element={<TokenPage />} />
-      </Routes>
+    <div className="app-background">
+      {/* Background overlay for better contrast */}
+      <div className="fixed inset-0 bg-black/20 pointer-events-none z-0"></div>
+      
+      {/* Additional glass overlay for depth */}
+      <div className="fixed inset-0 backdrop-blur-[1px] pointer-events-none z-0"></div>
+
+      {/* Main container - centered content */}
+      <div className="relative z-10 w-full flex justify-center min-h-screen">
+        <div className="max-w-6xl w-full p-4">
+        {/* Header with enhanced glass effect */}
+        <Card className="mb-8 backdrop-blur-xl bg-white/80 border-white/30 shadow-2xl ring-1 ring-white/20">
+          <CardHeader className="text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 drop-shadow-sm">
+              MyGov DAO Frontend
+            </h1>
+            <div className="flex justify-center">
+              <ConnectButton />
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Main content card with enhanced glass effect */}
+        <Card className="backdrop-blur-xl bg-white/80 border-white/30 shadow-2xl ring-1 ring-white/20">
+          <CardContent className="p-6">
+            <Tabs defaultValue="projects" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-8 bg-transparent border-0 shadow-none rounded-xl p-1">
+                <TabsTrigger 
+                  value="projects" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:backdrop-blur-sm text-gray-800 hover:bg-white/30 hover:shadow-md transition-all duration-300 rounded-lg font-medium shadow-sm backdrop-blur-sm bg-white/20"
+                  style={{
+                    color: '#1f2937'
+                  }}
+                >
+                  Projects
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="surveys"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:backdrop-blur-sm text-gray-800 hover:bg-white/30 hover:shadow-md transition-all duration-300 rounded-lg font-medium shadow-sm backdrop-blur-sm bg-white/20"
+                  style={{
+                    color: '#1f2937'
+                  }}
+                >
+                  Surveys
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tokens"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:backdrop-blur-sm text-gray-800 hover:bg-white/30 hover:shadow-md transition-all duration-300 rounded-lg font-medium shadow-sm backdrop-blur-sm bg-white/20"
+                  style={{
+                    color: '#1f2937'
+                  }}
+                >
+                  Tokens
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="projects" className="mt-0">
+                <div className="rounded-lg backdrop-blur-md bg-white/40 p-6 border border-white/30 shadow-lg">
+                  <ProjectPage />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="surveys" className="mt-0">
+                <div className="rounded-lg backdrop-blur-md bg-white/40 p-6 border border-white/30 shadow-lg">
+                  <SurveyPage />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="tokens" className="mt-0">
+                <div className="rounded-lg backdrop-blur-md bg-white/40 p-6 border border-white/30 shadow-lg">
+                  <TokenPage />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+        </div>
+      </div>
     </div>
-  </Router>
   )
 }
 

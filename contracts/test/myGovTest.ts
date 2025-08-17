@@ -46,8 +46,8 @@ describe("MyGov Testing", function () {
 
         // Deploy the Diamond
         const MyGov = await ethers.getContractFactory("MyGov");
-        const diamond = await MyGov.deploy(deployer.address, await diamondCutFacetInstance.address);
-        diamondAddress = await diamond.address;
+        const diamond = await MyGov.deploy(deployer.address, await diamondCutFacetInstance.getAddress());
+        diamondAddress = await diamond.getAddress();
 
         // Deploy custom facets
         const GovFacet = await ethers.getContractFactory("GovFacet");
@@ -70,46 +70,47 @@ describe("MyGov Testing", function () {
         const diamondCut = await ethers.getContractAt("IDiamondCut", diamondAddress);
 
         function getSelectors(contract: any) {
-            // contract.interface.functions is an object: keys = signature strings
-            // each function fragment has a 'selector' property you can get via getSighash(fragment)
-            const signatures = Object.keys(contract.interface.functions);
-            return signatures.map(sig => contract.interface.getSighash(sig));
+            // In ethers v6, we need to use contract.interface.fragments
+            const fragments = contract.interface.fragments;
+            return fragments
+                .filter((fragment: any) => fragment.type === 'function')
+                .map((fragment: any) => fragment.selector);
         }
 
 
         const cut = [
             {
-                facetAddress: await diamondLoupeFacetInstance.address,
+                facetAddress: await diamondLoupeFacetInstance.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(diamondLoupeFacetInstance),
             },
             {
-                facetAddress: await ownershipFacetInstance.address,
+                facetAddress: await ownershipFacetInstance.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(ownershipFacetInstance),
             },
             {
-                facetAddress: await govFacet.address,
+                facetAddress: await govFacet.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(govFacet),
             },
             {
-                facetAddress: await erc20Facet.address,
+                facetAddress: await erc20Facet.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(erc20Facet),
             },
             {
-                facetAddress: await surveyFacet.address,
+                facetAddress: await surveyFacet.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(surveyFacet),
             },
             {
-                facetAddress: await getterFacet.address,
+                facetAddress: await getterFacet.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(getterFacet),
             },
             {
-                facetAddress: await donationFacet.address,
+                facetAddress: await donationFacet.getAddress(),
                 action: FacetCutAction.Add,
                 functionSelectors: getSelectors(donationFacet),
             }
@@ -120,14 +121,14 @@ describe("MyGov Testing", function () {
             "My Governance",        // _name
             "MYGOV",              // _symbol
             18,                 // _decimals
-            ethers.utils.parseUnits("10000000", 18), // _initialSupply (e.g. 10 millions of tokens)
+            ethers.parseUnits("10000000", 18), // _initialSupply (e.g. 10 millions of tokens)
             deployer.address,      // _owner (your test deployer or owner address)
-            tlToken.address     // _tlToken (address of your TLToken contract, or zero address if none)
+            await tlToken.getAddress()     // _tlToken (address of your TLToken contract, or zero address if none)
         ]);
 
 
         // Diamond cut with init call
-        const tx = await diamondCut.diamondCut(cut, await diamondInitInstance.address, functionCall);
+        const tx = await diamondCut.diamondCut(cut, await diamondInitInstance.getAddress(), functionCall);
         const receipt = await tx.wait();
         if (receipt.status !== 1) {
             throw new Error("Diamond upgrade failed");
@@ -223,8 +224,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             await myGov.connect(deployer).sendTokens(voter2.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 4000);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 4000);
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
             await gov.connect(voter).voteForProjectProposal(index, true);
             await gov.connect(voter2).voteForProjectProposal(index, false);
@@ -241,8 +242,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(member.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
             // Move time to the deadline
@@ -258,8 +259,8 @@ describe("MyGov Testing", function () {
             // send myGov tokens to the users
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -274,8 +275,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
             // Vote for the first time
             await gov.connect(voter).voteForProjectProposal(index, true);
@@ -302,8 +303,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(delegator.address, 10);
             await myGov.connect(deployer).sendTokens(delegatee.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -322,8 +323,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(delegator.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -352,8 +353,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(delegator.address, 10);
             await myGov.connect(deployer).sendTokens(delegatee.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -372,8 +373,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(delegator.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -391,8 +392,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(delegator.address, 10);
             await myGov.connect(deployer).sendTokens(delegatee.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
 
@@ -411,8 +412,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
             deadline = await time.latest() + 60;
             payschedule = [deadline + 30 * 60, timestamp + 40 * 60, timestamp + 55 * 60];
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
@@ -436,8 +437,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
             await gov.connect(voter).voteForProjectProposal(index, true);
@@ -455,8 +456,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
             await gov.connect(voter).voteForProjectProposal(index, true);
@@ -480,8 +481,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 10);
             await myGov.connect(deployer).sendTokens(voter.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal(url, deadline, payamounts, payschedule);
             await gov.connect(voter).voteForProjectProposal(index, true);
@@ -515,27 +516,27 @@ describe("MyGov Testing", function () {
             // send myGov tokens to the users
             await myGov.connect(deployer).sendTokens(donator.address, 100);
             // approval from project owner to myGov
-            await tlToken.connect(donator).approve(await myGov.address, 10000);
-            await myGov.connect(donator).approve(await myGov.address, 100);
+            await tlToken.connect(donator).approve(await myGov.getAddress(), 10000);
+            await myGov.connect(donator).approve(await myGov.getAddress(), 100);
         });
         it("should allow a user to donate TL tokens", async () => {
             previousBalanceDonator = await tlToken.balanceOf(donator.address);
-            previousBalanceMyGov = await tlToken.balanceOf(myGov.address);
+            previousBalanceMyGov = await tlToken.balanceOf(await myGov.getAddress());
             donationAmount = 4000;
             await donation.connect(donator).donateTLToken(donationAmount);
 
             // Check if the donation was successful
             expect(await tlToken.balanceOf(donator.address) - previousBalanceDonator).to.equal(-1 * donationAmount);
-            expect(await tlToken.balanceOf(myGov.address) - previousBalanceMyGov).to.equal(donationAmount);
+            expect(await tlToken.balanceOf(await myGov.getAddress()) - previousBalanceMyGov).to.equal(donationAmount);
         });
         it("should allow a user to donate MYGOV tokens", async () => {
             previousBalanceDonator = await myGov.balanceOf(donator.address);
-            previousBalanceMyGov = await myGov.balanceOf(myGov.address);
+            previousBalanceMyGov = await myGov.balanceOf(await myGov.getAddress());
             donationAmount = 10;
             await donation.connect(donator).donateMyGovToken(donationAmount);
             // Check if the donation was successful
-            expect(previousBalanceDonator.sub(await myGov.balanceOf(donator.address))).to.equal(donationAmount);
-            expect((await myGov.balanceOf(myGov.address)).sub(previousBalanceMyGov)).to.equal(donationAmount);
+            expect(previousBalanceDonator - await myGov.balanceOf(donator.address)).to.equal(donationAmount);
+            expect((await myGov.balanceOf(await myGov.getAddress())) - previousBalanceMyGov).to.equal(donationAmount);
         });
         it("should not allow mygov balance to be less than 1 if user's voting power is active on a project", async () => {
             projectOwner = users[142];
@@ -543,8 +544,8 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(projectOwner.address, 5);
             await myGov.connect(deployer).sendTokens(donator.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(projectOwner).approve(await myGov.address, 4000);
-            await myGov.connect(projectOwner).approve(await myGov.address, 5);
+            await tlToken.connect(projectOwner).approve(await myGov.getAddress(), 4000);
+            await myGov.connect(projectOwner).approve(await myGov.getAddress(), 5);
 
             await gov.connect(projectOwner).submitProjectProposal("url", await time.latest() + 60, [1, 2], [await time.latest() + 5 * 60, await time.latest() + 5 * 120]);
             await gov.connect(donator).voteForProjectProposal(13, true);
@@ -565,14 +566,22 @@ describe("MyGov Testing", function () {
             // send myGov tokens to the users
             await myGov.connect(deployer).sendTokens(surveyOwner.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(surveyOwner).approve(await myGov.address, 1000);
-            await myGov.connect(surveyOwner).approve(await myGov.address, 2);
+            await tlToken.connect(surveyOwner).approve(await myGov.getAddress(), 1000);
+            await myGov.connect(surveyOwner).approve(await myGov.getAddress(), 2);
 
             const tx = await survey.connect(surveyOwner).submitSurvey(weburl, await time.latest() + surveydeadline, numchoices, atmostchoice);
             // Check if the survey was submitted successfully
             const receipt = await tx.wait();
-            const event = receipt.events.find((e: { event: string }) => e.event === "SurveySubmitted");
-            const surveyid = event.args.surveyid;
+            const event = receipt.logs.find((log: any) => {
+                try {
+                    const parsedLog = survey.interface.parseLog(log);
+                    return parsedLog && parsedLog.name === "SurveySubmitted";
+                } catch {
+                    return false;
+                }
+            });
+            const parsedEvent = survey.interface.parseLog(event);
+            const surveyid = parsedEvent.args.surveyid;
 
             expect(surveyid).to.equal(0);
         });
@@ -583,14 +592,22 @@ describe("MyGov Testing", function () {
             await myGov.connect(deployer).sendTokens(surveyOwner.address, 10);
             await myGov.connect(deployer).sendTokens(surveyTaker.address, 10);
             // approval from project owner to myGov
-            await tlToken.connect(surveyOwner).approve(await myGov.address, 1000);
-            await myGov.connect(surveyOwner).approve(await myGov.address, 2);
+            await tlToken.connect(surveyOwner).approve(await myGov.getAddress(), 1000);
+            await myGov.connect(surveyOwner).approve(await myGov.getAddress(), 2);
 
             const tx = await survey.connect(surveyOwner).submitSurvey(weburl, await time.latest() + surveydeadline, numchoices, atmostchoice);
             const receipt = await tx.wait();
 
-            const event = receipt.events.find((e: { event: string }) => e.event === "SurveySubmitted");
-            const surveyid = event.args.surveyid;
+            const event = receipt.logs.find((log: any) => {
+                try {
+                    const parsedLog = survey.interface.parseLog(log);
+                    return parsedLog && parsedLog.name === "SurveySubmitted";
+                } catch {
+                    return false;
+                }
+            });
+            const parsedEvent = survey.interface.parseLog(event);
+            const surveyid = parsedEvent.args.surveyid;
             await survey.connect(surveyTaker).takeSurvey(surveyid, [1, 2]);
 
             // Check if the survey was taken successfully

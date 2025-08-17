@@ -72,9 +72,9 @@ const DEPLOYMENT_CONFIG = {
   // Token configuration
   TOKEN_NAME: "My Governance",
   TOKEN_SYMBOL: "MYGOV",
-  TOKEN_DECIMALS: 18,
-  INITIAL_SUPPLY: ethers.parseUnits("10000000", 18), // 10 million tokens
-  
+  TOKEN_DECIMALS: 0,
+  INITIAL_SUPPLY: 10000000, // 10 million tokens
+
   // Deployment settings
   MAX_RETRIES: 3,
 } as const;

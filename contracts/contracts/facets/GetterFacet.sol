@@ -203,4 +203,42 @@ contract GetterFacet is IGetter {
         LibGovStorage.GovData storage gs = LibGovStorage.GovStorage();
         numMembers = gs.members;
     }
+
+    struct ProjectView {
+        uint projectId;
+        address projectOwner;
+        string webUrl;
+        uint voteDeadline;
+        uint[] paymentAmounts;
+        uint[] paySchedule;
+        bool beingFunded;
+        uint tlReceived;
+        uint numOfVotesYes;
+        uint numOfVotesNo;
+    }
+
+    function getProjects(uint startIndex, uint endIndex) external view returns (ProjectView[] memory) {
+        LibGovStorage.GovData storage gs = LibGovStorage.GovStorage();
+        uint numOfProjects = gs.numOfProjects;
+        if (endIndex > numOfProjects) {
+            endIndex = numOfProjects;
+        }
+        ProjectView[] memory projects = new ProjectView[](endIndex - startIndex);
+        for (uint i = startIndex; i < endIndex; i++) {
+            LibGovStorage.Project storage tempProject = gs.projects[i];
+            projects[i - startIndex] = ProjectView({
+                projectId: i,
+                projectOwner: tempProject.projectowner,
+                webUrl: tempProject.weburl,
+                voteDeadline: tempProject.votedeadline,
+                paymentAmounts: tempProject.paymentamounts,
+                paySchedule: tempProject.payschedule,
+                beingFunded: tempProject.beingFunded,
+                tlReceived: tempProject.tlreceived,
+                numOfVotesYes: tempProject.numOfVotesYes,
+                numOfVotesNo: tempProject.numOfVotesNo
+            });
+        }
+        return projects;
+    }
 }

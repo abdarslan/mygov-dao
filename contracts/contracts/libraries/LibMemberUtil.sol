@@ -13,7 +13,7 @@ library LibMemberUtil {
     function onlyMember() internal{
         LibGovStorage.GovData storage gs = LibGovStorage.GovStorage();
         // Access myGovToken balance by calling the diamond's ERC20 balanceOf function
-        if (IERC20(address(this)).balanceOf(msg.sender) == 0) {
+        if (IERC20(address(this)).balanceOf(msg.sender) < 1) {
             if (gs.isMember[msg.sender]) {
                 // Check if they *were* a member
                 gs.isMember[msg.sender] = false;
