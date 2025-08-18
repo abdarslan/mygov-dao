@@ -110,22 +110,26 @@ export function DonationForm({
               Your balance: {formatBalance(tokenBalance)} {tokenSymbol}
             </p>
           </div>
-          <Button 
-            onClick={handleSubmit}
-            disabled={isDisabled}
-            className={`w-full backdrop-blur-sm bg-gradient-to-r ${colors.gradient} text-white border ${colors.borderColor} shadow-lg transition-all duration-300 hover:scale-105`}
-          >
-            {isPending || isConfirming ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {isPending ? "Confirming..." : "Processing..."}
-              </>
-            ) : (
-              <>
-                {tokenIcon} Donate {tokenSymbol}
-              </>
-            )}
-          </Button>
+          
+          {/* Donation Button */}
+          <div className="space-y-2">
+            <Button 
+              onClick={handleSubmit}
+              disabled={isDisabled}
+              className={`w-full backdrop-blur-sm bg-gradient-to-r ${colors.gradient} text-white border ${colors.borderColor} shadow-lg transition-all duration-300 hover:scale-105`}
+            >
+              {isPending || isConfirming ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {isPending ? "Processing..." : "Confirming..."}
+                </>
+              ) : (
+                <>
+                  {tokenIcon} Donate {tokenSymbol}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { Loader2, Send, Coins } from "lucide-react";
 import deploymentInfo from "@/contract-data/deployment-info.json";
 import { TokenBalance, TokenFaucet, TransferForm, DonationForm } from "@/components/token";
+import { DonationTransactionDialog, type DonationStep, type StepStatus } from "@/components/shared/DonationTransactionDialog";
 
 const TokenPage: React.FC = () => {
     const { isConnected, address } = useAccount();
@@ -36,6 +37,8 @@ const TokenPage: React.FC = () => {
         mintTlToken,
         donateMyGovToken,
         donateTLToken,
+        approveMyGovForDonation,
+        approveTLForDonation,
         resetMessages,
     } = useToken();
 
@@ -44,6 +47,49 @@ const TokenPage: React.FC = () => {
     const [sendAmount, setSendAmount] = useState('');
     const [mintToAddress, setMintToAddress] = useState('');
     const [mintAmount, setMintAmount] = useState('');
+
+    // Donation transaction dialog state
+    const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false);
+    const [currentDonationStep, setCurrentDonationStep] = useState<DonationStep>("approval");
+    const [donationTokenSymbol, setDonationTokenSymbol] = useState("");
+    const [donationAmount, setDonationAmount] = useState("");
+    const [donationErrorMessage, setDonationErrorMessage] = useState<string | undefined>();
+    const [donationSuccessMessage, setDonationSuccessMessage] = useState<string | undefined>();
+    const [isApprovalComplete, setIsApprovalComplete] = useState(false);
+    const [isDonationStarted, setIsDonationStarted] = useState(false);
+
+    // Watch for successful approval to start donation
+    useEffect(() => {
+        if (isDonationDialogOpen && !error && !isPending && !isConfirming && isApprovalComplete && !isDonationStarted) {
+            setCurrentDonationStep("donation");
+            setIsDonationStarted(true);
+            
+            // Start donation transaction
+            if (donationTokenSymbol === myGovTokenSymbol) {
+                donateMyGovToken(donationAmount).catch((err: any) => {
+                    setDonationErrorMessage(err.message || "Donation failed");
+                });
+            } else if (donationTokenSymbol === tlTokenSymbol) {
+                donateTLToken(donationAmount).catch((err: any) => {
+                    setDonationErrorMessage(err.message || "Donation failed");
+                });
+            }
+        }
+    }, [isDonationDialogOpen, error, isPending, isConfirming, isApprovalComplete, isDonationStarted, donationTokenSymbol, donationAmount, myGovTokenSymbol, tlTokenSymbol, donateMyGovToken, donateTLToken]);
+
+    // Watch for transaction completion to update approval status
+    useEffect(() => {
+        if (isDonationDialogOpen && currentDonationStep === "approval" && !isPending && !isConfirming && !error) {
+            setIsApprovalComplete(true);
+        }
+    }, [isDonationDialogOpen, currentDonationStep, isPending, isConfirming, error]);
+
+    // Watch for successful donation completion
+    useEffect(() => {
+        if (isDonationDialogOpen && isDonationStarted && !isPending && !isConfirming && !error) {
+            setDonationSuccessMessage(`Successfully donated ${donationAmount} ${donationTokenSymbol} tokens!`);
+        }
+    }, [isDonationDialogOpen, isDonationStarted, isPending, isConfirming, error, donationAmount, donationTokenSymbol]);
 
     const handleFaucet = async () => {
         await faucet();
@@ -68,11 +114,54 @@ const TokenPage: React.FC = () => {
     };
 
     const handleDonateMyGov = async (amount: string) => {
-        await donateMyGovToken(amount);
+        setDonationAmount(amount);
+        setDonationTokenSymbol(myGovTokenSymbol);
+        setIsDonationDialogOpen(true);
+        setCurrentDonationStep("approval");
+        setDonationErrorMessage(undefined);
+        setDonationSuccessMessage(undefined);
+        setIsApprovalComplete(false);
+        setIsDonationStarted(false);
+
+        // Start approval transaction (don't await - let the useEffect handle state)
+        approveMyGovForDonation(amount).catch((err: any) => {
+            setDonationErrorMessage(err.message || "Approval failed");
+        });
     };
 
     const handleDonateTL = async (amount: string) => {
-        await donateTLToken(amount);
+        setDonationAmount(amount);
+        setDonationTokenSymbol(tlTokenSymbol);
+        setIsDonationDialogOpen(true);
+        setCurrentDonationStep("approval");
+        setDonationErrorMessage(undefined);
+        setDonationSuccessMessage(undefined);
+        setIsApprovalComplete(false);
+        setIsDonationStarted(false);
+
+        // Start approval transaction (don't await - let the useEffect handle state)
+        approveTLForDonation(amount).catch((err: any) => {
+            setDonationErrorMessage(err.message || "Approval failed");
+        });
+    };
+
+    // Simplified status computation using available states
+    const getApprovalStatus = (): StepStatus => {
+        if (!isDonationDialogOpen) return "idle";
+        if (error && !isApprovalComplete) return "error";
+        if (isApprovalComplete) return "success";
+        if (isConfirming && !isApprovalComplete) return "confirming";
+        if (isPending && !isApprovalComplete) return "pending";
+        return "idle";
+    };
+
+    const getDonationStatus = (): StepStatus => {
+        if (!isDonationDialogOpen || !isDonationStarted) return "idle";
+        if (error && isApprovalComplete) return "error";
+        if (donationSuccessMessage) return "success";
+        if (isConfirming && isDonationStarted) return "confirming";
+        if (isPending && isDonationStarted) return "pending";
+        return "idle";
     };
 
     // Check if connected account is the deployer
@@ -347,6 +436,28 @@ const TokenPage: React.FC = () => {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Donation Transaction Dialog */}
+            <DonationTransactionDialog
+                isOpen={isDonationDialogOpen}
+                onClose={() => {
+                    setIsDonationDialogOpen(false);
+                    setDonationErrorMessage(undefined);
+                    setDonationSuccessMessage(undefined);
+                    setCurrentDonationStep("approval");
+                    setIsApprovalComplete(false);
+                    setIsDonationStarted(false);
+                }}
+                currentStep={currentDonationStep}
+                approvalStatus={getApprovalStatus()}
+                donationStatus={getDonationStatus()}
+                tokenSymbol={donationTokenSymbol}
+                amount={donationAmount}
+                errorMessage={donationErrorMessage}
+                successMessage={donationSuccessMessage}
+                approvalTxHash={undefined}
+                donationTxHash={undefined}
+            />
         </div>
     );
 };

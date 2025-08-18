@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useContractRead, useContractWrite } from './useContract';
 import { formatUnits, parseUnits } from 'viem';
+import addresses from '@/contract-data/addresses.json';
 
 /**
  * Hook for managing MyGov token operations
@@ -253,7 +254,7 @@ export const useToken = () => {
     setIsLoading(pendingMyGov || confirmingMyGov || pendingTL || confirmingTL || pendingDonation || confirmingDonation);
   }, [pendingMyGov, confirmingMyGov, pendingTL, confirmingTL, pendingDonation, confirmingDonation]);
 
-  // Donation functions
+  // Donation functions - require manual approval first
   const donateMyGovToken = useCallback(async (amount: string) => {
     if (!account) {
       setError('Please connect your wallet first');
@@ -304,6 +305,15 @@ export const useToken = () => {
     }
   }, [account, writeDonation, resetMessages, tlTokenDecimals]);
 
+  // Helper functions for donation approvals
+  const approveMyGovForDonation = useCallback(async (amount: string) => {
+    return approve(addresses.diamond, amount);
+  }, [approve]);
+
+  const approveTLForDonation = useCallback(async (amount: string) => {
+    return approveTLToken(addresses.diamond, amount);
+  }, [approveTLToken]);
+
   return {
     // MyGov Token data
     myGovBalance: formattedMyGovBalance,
@@ -333,11 +343,13 @@ export const useToken = () => {
     approve,
     sendMyGovToken,
     donateMyGovToken,
+    approveMyGovForDonation,
     
     // TL Token Actions
     mintTlToken,
     approveTLToken,
     donateTLToken,
+    approveTLForDonation,
     
     // Utility functions
     resetMessages,

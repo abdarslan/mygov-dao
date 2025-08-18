@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { ThumbsUp, ThumbsDown, Users, UserCheck, Calendar, Clock } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Users, UserCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProjectVoting } from "@/hooks/useProjects";
+import { useAccount } from "wagmi";
+import { ErrorDialog } from "@/components/shared/ErrorDialog";
 
 interface VotingCardProps {
   projectId: number;
@@ -18,6 +20,7 @@ interface VotingCardProps {
   isVotingActive: boolean;
   paySchedule: Date[];
   beingFunded: boolean;
+  projectOwner: string;
   onVoteSuccess?: (voteChoice: boolean) => void;
 }
 
@@ -33,14 +36,27 @@ export function VotingCard({
   isVotingActive,
   paySchedule,
   beingFunded,
+  projectOwner,
   onVoteSuccess,
 }: VotingCardProps) {
+  const { address } = useAccount();
   const [delegateAddress, setDelegateAddress] = useState("");
   const [showDelegateInput, setShowDelegateInput] = useState(false);
   const [localYesVotes, setLocalYesVotes] = useState(initialYesVotes);
   const [localNoVotes, setLocalNoVotes] = useState(initialNoVotes);
   const [localHasUserVoted, setLocalHasUserVoted] = useState(hasUserVoted);
   const [localUserVoteChoice, setLocalUserVoteChoice] = useState(userVoteChoice);
+  const [errorDialog, setErrorDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    details?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    details: "",
+  });
   
   const { voteForProject, voteForProjectPayment, delegateVote, isVoting, isSuccess, error } = useProjectVoting();
 
@@ -96,34 +112,50 @@ export function VotingCard({
     setLocalUserVoteChoice(userVoteChoice);
   }, [initialYesVotes, initialNoVotes, hasUserVoted, userVoteChoice]);
 
-  // Handle successful vote transactions
+  // Handle successful vote transactions - Only update UI on success
   useEffect(() => {
-    if (isSuccess && !localHasUserVoted) {
+    if (isSuccess) {
       // Call the callback if provided
       onVoteSuccess?.(localUserVoteChoice || false);
       setShowDelegateInput(false);
     }
-  }, [isSuccess, localHasUserVoted, localUserVoteChoice, onVoteSuccess]);
+  }, [isSuccess, localUserVoteChoice, onVoteSuccess]);
+
+  // Handle transaction errors
+  useEffect(() => {
+    if (error) {
+      setErrorDialog({
+        isOpen: true,
+        title: "Transaction Failed",
+        message: "Your vote could not be processed. Please try again.",
+        details: error.message,
+      });
+    }
+  }, [error]);
 
   const totalVotes = localYesVotes + localNoVotes;
   const yesPercentage = totalVotes > 0 ? (localYesVotes / totalVotes) * 100 : 0;
   const noPercentage = totalVotes > 0 ? (localNoVotes / totalVotes) * 100 : 0;
 
   const handleVote = (choice: boolean) => {
+    // Check if user is the project owner
+    if (address && address.toLowerCase() === projectOwner.toLowerCase()) {
+      setErrorDialog({
+        isOpen: true,
+        title: "Cannot Vote",
+        message: "Project owners cannot vote on their own projects.",
+        details: "This is to ensure fair and unbiased voting on project proposals and payments.",
+      });
+      return;
+    }
+
     if (votingInfo.type === 'project') {
       voteForProject(projectId, choice);
     } else if (votingInfo.type === 'payment') {
       voteForProjectPayment(projectId, choice);
     }
     
-    // Optimistically update the UI
-    if (choice) {
-      setLocalYesVotes(prev => prev + 1);
-    } else {
-      setLocalNoVotes(prev => prev + 1);
-    }
-    setLocalHasUserVoted(true);
-    setLocalUserVoteChoice(choice);
+    // Remove optimistic updates - wait for transaction success
   };
 
   const handleDelegate = () => {
@@ -136,7 +168,8 @@ export function VotingCard({
   const canVote = votingInfo.isActive && !localHasUserVoted && !hasDelegated && !isVotingExpired;
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />
@@ -323,14 +356,6 @@ export function VotingCard({
           </div>
         )}
 
-        {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-            <span className="text-sm text-red-900">
-              Error: {error.message || "Transaction failed"}
-            </span>
-          </div>
-        )}
-
         {/* Next Payment Milestone Preview */}
         {votingInfo.nextMilestone && beingFunded && (
           <div className="border-t pt-4">
@@ -350,6 +375,17 @@ export function VotingCard({
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+      
+      {/* Error Dialog */}
+      <ErrorDialog
+        isOpen={errorDialog.isOpen}
+        onClose={() => setErrorDialog(prev => ({ ...prev, isOpen: false }))}
+        title={errorDialog.title}
+        message={errorDialog.message}
+        details={errorDialog.details}
+        severity="error"
+      />
+    </>
   );
 }

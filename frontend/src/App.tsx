@@ -1,5 +1,6 @@
 import './App.css'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { Dashboard } from './pages/Dashboard.tsx'
 import { ProjectPage } from './pages/ProjectPage.tsx'
 import SurveyPage from './pages/SurveyPage.tsx'
 import TokenPage from './pages/TokenPage.tsx'
@@ -33,8 +34,17 @@ function App() {
         {/* Main content card with enhanced glass effect */}
         <Card className="backdrop-blur-xl bg-white/80 border-white/30 shadow-2xl ring-1 ring-white/20">
           <CardContent className="p-6">
-            <Tabs defaultValue="projects" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8 bg-transparent border-0 shadow-none rounded-xl p-1">
+            <Tabs defaultValue="dashboard" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-8 bg-transparent border-0 shadow-none rounded-xl p-1">
+                <TabsTrigger 
+                  value="dashboard" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:backdrop-blur-sm text-gray-800 hover:bg-white/30 hover:shadow-md transition-all duration-300 rounded-lg font-medium shadow-sm backdrop-blur-sm bg-white/20"
+                  style={{
+                    color: '#1f2937'
+                  }}
+                >
+                  Dashboard
+                </TabsTrigger>
                 <TabsTrigger 
                   value="projects" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:backdrop-blur-sm text-gray-800 hover:bg-white/30 hover:shadow-md transition-all duration-300 rounded-lg font-medium shadow-sm backdrop-blur-sm bg-white/20"
@@ -63,6 +73,12 @@ function App() {
                   Tokens
                 </TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="dashboard" className="mt-0">
+                <div className="rounded-lg backdrop-blur-md bg-white/40 p-6 border border-white/30 shadow-lg">
+                  <Dashboard />
+                </div>
+              </TabsContent>
               
               <TabsContent value="projects" className="mt-0">
                 <div className="rounded-lg backdrop-blur-md bg-white/40 p-6 border border-white/30 shadow-lg">

@@ -260,6 +260,7 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
               isVotingActive={isVotingActive}
               paySchedule={project.paySchedule}
               beingFunded={project.beingFunded}
+              projectOwner={project.projectOwner}
               onVoteSuccess={handleVoteSuccess}
             />
           </TabsContent>
