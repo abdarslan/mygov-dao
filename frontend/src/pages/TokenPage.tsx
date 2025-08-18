@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToken } from "@/hooks/useToken";
 import { useAccount } from "wagmi";
-import { Loader2, Droplets, Send, RefreshCw, Coins, DollarSign } from "lucide-react";
+import { Loader2, Send, Coins } from "lucide-react";
+import deploymentInfo from "@/contract-data/deployment-info.json";
+import { TokenBalance, TokenFaucet, TransferForm, DonationForm } from "@/components/token";
 
 const TokenPage: React.FC = () => {
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
     const {
         // MyGov Token data
         myGovBalance,
@@ -18,9 +20,7 @@ const TokenPage: React.FC = () => {
         
         // TL Token data
         tlTokenBalance,
-        tlTokenName,
         tlTokenSymbol,
-        tlTokenTotalSupply,
         
         // States
         isLoading,
@@ -34,14 +34,10 @@ const TokenPage: React.FC = () => {
         transfer,
         sendMyGovToken,
         mintTlToken,
+        donateMyGovToken,
+        donateTLToken,
         resetMessages,
-        refetchMyGovBalance,
-        refetchTLTokenBalance,
     } = useToken();
-
-    // Transfer state
-    const [transferTo, setTransferTo] = useState('');
-    const [transferAmount, setTransferAmount] = useState('');
 
     // Admin functions state
     const [sendToAddress, setSendToAddress] = useState('');
@@ -53,11 +49,8 @@ const TokenPage: React.FC = () => {
         await faucet();
     };
 
-    const handleTransfer = async () => {
-        if (!transferTo || !transferAmount) return;
+    const handleTransfer = async (transferTo: string, transferAmount: string) => {
         await transfer(transferTo, transferAmount);
-        setTransferTo('');
-        setTransferAmount('');
     };
 
     const handleSendMyGovToken = async () => {
@@ -74,10 +67,16 @@ const TokenPage: React.FC = () => {
         setMintAmount('');
     };
 
-    const refreshAllBalances = () => {
-        refetchMyGovBalance();
-        refetchTLTokenBalance();
+    const handleDonateMyGov = async (amount: string) => {
+        await donateMyGovToken(amount);
     };
+
+    const handleDonateTL = async (amount: string) => {
+        await donateTLToken(amount);
+    };
+
+    // Check if connected account is the deployer
+    const isDeployer = address?.toLowerCase() === deploymentInfo.deployer.toLowerCase();
 
     return (
         <div className="space-y-6">
@@ -117,70 +116,23 @@ const TokenPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Token Balance */}
-                <Card className="backdrop-blur-sm bg-white/20 border-white/30">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                            💰 Token Balance
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-blue-600 mb-2">
-                                {isLoading ? <Loader2 className="h-8 w-8 animate-spin mx-auto" /> : myGovBalance}
-                            </div>
-                            <p className="text-sm text-gray-600">{myGovTokenSymbol} Tokens</p>
-                            <div className="flex gap-2 mt-4">
-                                <Button 
-                                    onClick={() => refetchMyGovBalance()}
-                                    disabled={isLoading}
-                                    className="flex-1 backdrop-blur-sm bg-white/60 hover:bg-white/80 text-gray-700 border border-white/40 shadow-lg transition-all duration-300 hover:scale-105"
-                                >
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    Refresh
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <TokenBalance
+                    myGovBalance={myGovBalance?.toString() || "0"}
+                    myGovSymbol={myGovTokenSymbol}
+                    tlTokenBalance={tlTokenBalance?.toString() || "0"}
+                    tlTokenSymbol={tlTokenSymbol}
+                    isLoading={isLoading}
+                />
 
                 {/* Faucet */}
-                <Card className="backdrop-blur-sm bg-white/20 border-white/30">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                            <Droplets className="h-5 w-5" />
-                            Token Faucet
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-4">
-                                Get free {myGovTokenSymbol} tokens for testing
-                            </p>
-                            <Button 
-                                onClick={handleFaucet}
-                                disabled={!isConnected || isLoading || isPending || isConfirming}
-                                className="w-full backdrop-blur-sm bg-blue-500/80 hover:bg-blue-600/90 text-white border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105"
-                            >
-                                {isPending || isConfirming ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        {isPending ? 'Confirming...' : 'Processing...'}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Droplets className="h-4 w-4 mr-2" />
-                                        Request Tokens
-                                    </>
-                                )}
-                            </Button>
-                            {!isConnected && (
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Connect your wallet to use faucet
-                                </p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                <TokenFaucet
+                    tokenSymbol={myGovTokenSymbol}
+                    onFaucet={handleFaucet}
+                    isLoading={isLoading}
+                    isPending={isPending}
+                    isConfirming={isConfirming}
+                    isConnected={isConnected}
+                />
 
                 {/* Token Info */}
                 <Card className="backdrop-blur-sm bg-white/20 border-white/30">
@@ -208,66 +160,48 @@ const TokenPage: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Transfer Section */}
-            <Card className="backdrop-blur-sm bg-white/20 border-white/30">
-                <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <Send className="h-5 w-5" />
-                        Transfer Tokens
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="transferTo" className="text-sm font-medium text-gray-700">
-                                Recipient Address
-                            </Label>
-                            <Input
-                                id="transferTo"
-                                type="text"
-                                value={transferTo}
-                                onChange={(e) => setTransferTo(e.target.value)}
-                                placeholder="0x..."
-                                className="backdrop-blur-sm bg-white/40 border-white/60 focus:border-blue-400 focus:ring-blue-400/20"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="transferAmount" className="text-sm font-medium text-gray-700">
-                                Amount
-                            </Label>
-                            <Input
-                                id="transferAmount"
-                                type="number"
-                                value={transferAmount}
-                                onChange={(e) => setTransferAmount(e.target.value)}
-                                placeholder="0"
-                                className="backdrop-blur-sm bg-white/40 border-white/60 focus:border-blue-400 focus:ring-blue-400/20"
-                                disabled={isLoading}
-                            />
-                        </div>
-                    </div>
-                    <Button 
-                        onClick={handleTransfer}
-                        disabled={!isConnected || !transferTo || !transferAmount || isLoading || isPending || isConfirming}
-                        className="mt-4 w-full backdrop-blur-sm bg-gradient-to-r from-purple-500/80 to-pink-600/80 hover:from-purple-600/90 hover:to-pink-700/90 text-white border border-purple-400/30 shadow-lg transition-all duration-300 hover:scale-105"
-                    >
-                        {isPending || isConfirming ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                {isPending ? 'Confirming...' : 'Processing...'}
-                            </>
-                        ) : (
-                            <>
-                                <Send className="h-4 w-4 mr-2" />
-                                Transfer Tokens
-                            </>
-                        )}
-                    </Button>
-                </CardContent>
-            </Card>
+            {/* Donation Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Donate MyGov Tokens */}
+                <DonationForm
+                    tokenSymbol={myGovTokenSymbol}
+                    tokenBalance={myGovBalance?.toString() || "0"}
+                    tokenIcon="💝"
+                    onDonate={handleDonateMyGov}
+                    isLoading={isLoading}
+                    isPending={isPending}
+                    isConfirming={isConfirming}
+                    isConnected={isConnected}
+                    color="purple"
+                    step="1"
+                />
 
-            {/* Admin Functions */}
+                {/* Donate TL Tokens */}
+                <DonationForm
+                    tokenSymbol={tlTokenSymbol}
+                    tokenBalance={tlTokenBalance?.toString() || "0"}
+                    tokenIcon="🎁"
+                    onDonate={handleDonateTL}
+                    isLoading={isLoading}
+                    isPending={isPending}
+                    isConfirming={isConfirming}
+                    isConnected={isConnected}
+                    color="indigo"
+                    step="0.000000000000000001"
+                />
+            </div>
+
+            {/* Transfer Section */}
+            <TransferForm
+                onTransfer={handleTransfer}
+                isLoading={isLoading}
+                isPending={isPending}
+                isConfirming={isConfirming}
+                isConnected={isConnected}
+            />
+
+            {/* Admin Functions - Only show for deployer */}
+            {isDeployer && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Send MyGov Tokens (Owner) */}
                 <Card className="backdrop-blur-sm bg-white/20 border-white/30">
@@ -387,30 +321,7 @@ const TokenPage: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Token Balances Summary */}
-            <Card className="backdrop-blur-sm bg-white/20 border-white/30">
-                <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <DollarSign className="h-5 w-5" />
-                        Token Balances Summary
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="text-center p-4 rounded-lg bg-blue-50/50">
-                            <h3 className="font-semibold text-gray-800 mb-2">{myGovTokenName}</h3>
-                            <div className="text-2xl font-bold text-blue-600">{myGovBalance}</div>
-                            <p className="text-sm text-gray-600">{myGovTokenSymbol} Tokens</p>
-                        </div>
-                        <div className="text-center p-4 rounded-lg bg-green-50/50">
-                            <h3 className="font-semibold text-gray-800 mb-2">{tlTokenName}</h3>
-                            <div className="text-2xl font-bold text-green-600">{tlTokenBalance}</div>
-                            <p className="text-sm text-gray-600">{tlTokenSymbol} Tokens</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            )}
 
             {/* Transaction History */}
             <Card className="backdrop-blur-sm bg-white/20 border-white/30">

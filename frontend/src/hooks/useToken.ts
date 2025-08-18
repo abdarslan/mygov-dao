@@ -16,6 +16,7 @@ export const useToken = () => {
   // Contract write hooks for both ERC20 and TLToken operations
   const { write: writeMyGov, isPending: pendingMyGov, isConfirming: confirmingMyGov, isSuccess: successMyGov, error: errorMyGov } = useContractWrite('erc20');
   const { write: writeTL, isPending: pendingTL, isConfirming: confirmingTL, isSuccess: successTL, error: errorTL } = useContractWrite('tltoken');
+  const { write: writeDonation, isPending: pendingDonation, isConfirming: confirmingDonation, isSuccess: successDonation, error: errorDonation } = useContractWrite('donation');
 
   // Read MyGov token data
   const { 
@@ -230,10 +231,78 @@ export const useToken = () => {
     }
   }, [errorTL]);
 
+  useEffect(() => {
+    if (errorDonation) {
+      setError(`Donation transaction failed: ${errorDonation.message || 'Unknown error'}`);
+      setIsLoading(false);
+    }
+  }, [errorDonation]);
+
+  useEffect(() => {
+    if (successDonation) {
+      setLastActionMessage('Donation successful! Thank you for your contribution.');
+      setIsLoading(false);
+      // Refetch balances after successful donation
+      refetchMyGovBalance();
+      refetchTLTokenBalance();
+    }
+  }, [successDonation, refetchMyGovBalance, refetchTLTokenBalance]);
+
   // Update loading state based on transaction status
   useEffect(() => {
-    setIsLoading(pendingMyGov || confirmingMyGov || pendingTL || confirmingTL);
-  }, [pendingMyGov, confirmingMyGov, pendingTL, confirmingTL]);
+    setIsLoading(pendingMyGov || confirmingMyGov || pendingTL || confirmingTL || pendingDonation || confirmingDonation);
+  }, [pendingMyGov, confirmingMyGov, pendingTL, confirmingTL, pendingDonation, confirmingDonation]);
+
+  // Donation functions
+  const donateMyGovToken = useCallback(async (amount: string) => {
+    if (!account) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!amount) {
+      setError('Please provide donation amount');
+      return;
+    }
+
+    resetMessages();
+    setIsLoading(true);
+
+    try {
+      // MyGov tokens have 0 decimals
+      const amountInWei = BigInt(amount);
+      writeDonation('donateMyGovToken', [amountInWei]);
+    } catch (err: any) {
+      console.error('Donate MyGov token error:', err);
+      setError(`Failed to donate MyGov tokens: ${err.message || err.reason || 'Unknown error'}`);
+      setIsLoading(false);
+    }
+  }, [account, writeDonation, resetMessages]);
+
+  const donateTLToken = useCallback(async (amount: string) => {
+    if (!account) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    if (!amount) {
+      setError('Please provide donation amount');
+      return;
+    }
+
+    resetMessages();
+    setIsLoading(true);
+
+    try {
+      // TLToken has 18 decimals
+      const amountInWei = parseUnits(amount, tlTokenDecimals || 18);
+      writeDonation('donateTLToken', [amountInWei]);
+    } catch (err: any) {
+      console.error('Donate TL token error:', err);
+      setError(`Failed to donate TL tokens: ${err.message || err.reason || 'Unknown error'}`);
+      setIsLoading(false);
+    }
+  }, [account, writeDonation, resetMessages, tlTokenDecimals]);
 
   return {
     // MyGov Token data
@@ -251,8 +320,8 @@ export const useToken = () => {
     
     // Loading states
     isLoading: isLoading || myGovBalanceLoading || tlTokenBalanceLoading,
-    isPending: pendingMyGov || pendingTL,
-    isConfirming: confirmingMyGov || confirmingTL,
+    isPending: pendingMyGov || pendingTL || pendingDonation,
+    isConfirming: confirmingMyGov || confirmingTL || confirmingDonation,
     
     // Messages and errors
     error,
@@ -263,10 +332,12 @@ export const useToken = () => {
     transfer,
     approve,
     sendMyGovToken,
+    donateMyGovToken,
     
     // TL Token Actions
     mintTlToken,
     approveTLToken,
+    donateTLToken,
     
     // Utility functions
     resetMessages,
@@ -274,7 +345,7 @@ export const useToken = () => {
     refetchTLTokenBalance,
     
     // Transaction status
-    isSuccess: successMyGov || successTL,
+    isSuccess: successMyGov || successTL || successDonation,
     
     // Formatting utilities
     formatTLAmount: (amount: bigint) => formatUnits(amount, 18),

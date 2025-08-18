@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ThumbsUp, ThumbsDown, Users, UserCheck } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { ThumbsUp, ThumbsDown, Users, UserCheck, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ interface VotingCardProps {
   hasDelegated?: boolean;
   delegatedTo?: string;
   isVotingActive: boolean;
+  paySchedule: Date[];
+  beingFunded: boolean;
   onVoteSuccess?: (voteChoice: boolean) => void;
 }
 
@@ -29,6 +31,8 @@ export function VotingCard({
   hasDelegated = false,
   delegatedTo,
   isVotingActive,
+  paySchedule,
+  beingFunded,
   onVoteSuccess,
 }: VotingCardProps) {
   const [delegateAddress, setDelegateAddress] = useState("");
@@ -38,7 +42,51 @@ export function VotingCard({
   const [localHasUserVoted, setLocalHasUserVoted] = useState(hasUserVoted);
   const [localUserVoteChoice, setLocalUserVoteChoice] = useState(userVoteChoice);
   
-  const { voteForProject, delegateVote, isVoting, isSuccess, error } = useProjectVoting();
+  const { voteForProject, voteForProjectPayment, delegateVote, isVoting, isSuccess, error } = useProjectVoting();
+
+  // Determine current voting type and next payment milestone
+  const votingInfo = useMemo(() => {
+    const now = new Date();
+    
+    // If project is not yet funded and voting is active, it's project voting
+    if (!beingFunded && isVotingActive) {
+      return {
+        type: 'project',
+        title: 'Project Proposal Voting',
+        description: 'Vote on whether this project should be funded',
+        isActive: true,
+        nextMilestone: null,
+      };
+    }
+    
+    // If project is funded, check for payment voting
+    if (beingFunded && paySchedule.length > 0) {
+      // Find the next payment that hasn't occurred yet
+      const nextPaymentIndex = paySchedule.findIndex(date => now < date);
+      
+      if (nextPaymentIndex >= 0) {
+        const nextPaymentDate = paySchedule[nextPaymentIndex];
+        const isPaymentVotingTime = now >= new Date(nextPaymentDate.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days before
+        
+        return {
+          type: 'payment',
+          title: `Payment Milestone ${nextPaymentIndex + 1} Voting`,
+          description: `Vote on payment for milestone ${nextPaymentIndex + 1}`,
+          isActive: isPaymentVotingTime,
+          nextMilestone: nextPaymentIndex < paySchedule.length - 1 ? nextPaymentIndex + 2 : null,
+          paymentDate: nextPaymentDate,
+        };
+      }
+    }
+    
+    return {
+      type: 'none',
+      title: 'No Active Voting',
+      description: 'No voting is currently active for this project',
+      isActive: false,
+      nextMilestone: null,
+    };
+  }, [beingFunded, isVotingActive, paySchedule]);
 
   // Update local state when props change
   useEffect(() => {
@@ -62,7 +110,12 @@ export function VotingCard({
   const noPercentage = totalVotes > 0 ? (localNoVotes / totalVotes) * 100 : 0;
 
   const handleVote = (choice: boolean) => {
-    voteForProject(projectId, choice);
+    if (votingInfo.type === 'project') {
+      voteForProject(projectId, choice);
+    } else if (votingInfo.type === 'payment') {
+      voteForProjectPayment(projectId, choice);
+    }
+    
     // Optimistically update the UI
     if (choice) {
       setLocalYesVotes(prev => prev + 1);
@@ -80,17 +133,33 @@ export function VotingCard({
   };
 
   const isVotingExpired = new Date() > voteDeadline;
-  const canVote = isVotingActive && !localHasUserVoted && !hasDelegated && !isVotingExpired;
+  const canVote = votingInfo.isActive && !localHasUserVoted && !hasDelegated && !isVotingExpired;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />
-          Voting
+          {votingInfo.title}
         </CardTitle>
+        <p className="text-sm text-muted-foreground">{votingInfo.description}</p>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Voting Type Info */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${votingInfo.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+            <span className="text-sm font-medium">
+              {votingInfo.type === 'project' ? 'Project Voting' : 
+               votingInfo.type === 'payment' ? 'Payment Voting' : 'No Active Voting'}
+            </span>
+          </div>
+          {votingInfo.paymentDate && (
+            <span className="text-sm text-muted-foreground">
+              Due: {votingInfo.paymentDate.toLocaleDateString()}
+            </span>
+          )}
+        </div>
         {/* Vote Results */}
         <div className="space-y-4">
           <h4 className="font-medium">Current Results</h4>
@@ -259,6 +328,25 @@ export function VotingCard({
             <span className="text-sm text-red-900">
               Error: {error.message || "Transaction failed"}
             </span>
+          </div>
+        )}
+
+        {/* Next Payment Milestone Preview */}
+        {votingInfo.nextMilestone && beingFunded && (
+          <div className="border-t pt-4">
+            <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Next Voting</span>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full text-left justify-start text-gray-600 hover:text-gray-800"
+                disabled
+              >
+                Payment Milestone {votingInfo.nextMilestone}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

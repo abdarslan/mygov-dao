@@ -39,12 +39,35 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
   const [localYesVotes, setLocalYesVotes] = useState(project.yesVotes);
   const [localNoVotes, setLocalNoVotes] = useState(project.noVotes);
   const [localCurrentVotes, setLocalCurrentVotes] = useState(project.currentVotes);
+  const [currentTab, setCurrentTab] = useState("overview");
+  const [previousTab, setPreviousTab] = useState("overview");
 
   const isVotingActive = new Date() < project.voteDeadline && project.status === "active";
   const totalPayments = project.paymentAmounts.reduce((sum, amount) => sum + amount, 0);
   
   // Check if connected account is the project owner
   const isProjectOwner = connectedAccount?.toLowerCase() === project.projectOwner.toLowerCase();
+
+  // Define tab order for animation direction
+  const tabOrder = isProjectOwner 
+    ? ["overview", "voting", "management", "funding"]
+    : ["overview", "voting", "funding"];
+
+  const handleTabChange = (newTab: string) => {
+    setPreviousTab(currentTab);
+    setCurrentTab(newTab);
+  };
+
+  const getSlideDirection = (tabValue: string) => {
+    const currentIndex = tabOrder.indexOf(previousTab);
+    const newIndex = tabOrder.indexOf(tabValue);
+    
+    if (newIndex > currentIndex) {
+      return "slide-in-from-right-full"; // Moving forward (left to right)
+    } else {
+      return "slide-in-from-left-full"; // Moving backward (right to left)
+    }
+  };
 
   const handleVoteSuccess = (voteChoice: boolean) => {
     if (voteChoice) {
@@ -97,39 +120,43 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className={`grid w-full ${isProjectOwner ? 'grid-cols-4' : 'grid-cols-3'} bg-transparent border-b border-border rounded-none p-0 h-auto`}>
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className={`grid w-full ${isProjectOwner ? 'grid-cols-4' : 'grid-cols-3'} bg-transparent rounded-none p-0 h-auto`}>
             <TabsTrigger 
               value="overview" 
-              className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-3"
+              className="relative rounded-none py-3 px-4 transition-all duration-300 hover:bg-gray-50 shadow-md !bg-transparent !text-gray-900 data-[state=active]:!bg-transparent data-[state=active]:!text-gray-900 data-[state=active]:shadow-purple-500/50 data-[state=active]:transform data-[state=active]:scale-105 font-medium !border-none !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0"
+              style={{ backgroundColor: 'transparent !important', border: 'none !important', outline: 'none !important' }}
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="voting"
-              className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-3"
+              className="relative rounded-none py-3 px-4 transition-all duration-300 hover:bg-gray-50 shadow-md !bg-transparent !text-gray-900 data-[state=active]:!bg-transparent data-[state=active]:!text-gray-900 data-[state=active]:shadow-purple-500/50 data-[state=active]:transform data-[state=active]:scale-105 font-medium !border-none !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0"
+              style={{ backgroundColor: 'transparent !important', border: 'none !important', outline: 'none !important' }}
             >
               Voting
             </TabsTrigger>
             {isProjectOwner && (
               <TabsTrigger 
                 value="management"
-                className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-3"
+                className="relative rounded-none py-3 px-4 transition-all duration-300 hover:bg-gray-50 shadow-md !bg-transparent !text-gray-900 data-[state=active]:!bg-transparent data-[state=active]:!text-gray-900 data-[state=active]:shadow-purple-500/50 data-[state=active]:transform data-[state=active]:scale-105 font-medium !border-none !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0"
+                style={{ backgroundColor: 'transparent !important', border: 'none !important', outline: 'none !important' }}
               >
                 Management
               </TabsTrigger>
             )}
             <TabsTrigger 
               value="funding"
-              className="border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none py-3"
+              className="relative rounded-none py-3 px-4 transition-all duration-300 hover:bg-gray-50 shadow-md !bg-transparent !text-gray-900 data-[state=active]:!bg-transparent data-[state=active]:!text-gray-900 data-[state=active]:shadow-purple-500/50 data-[state=active]:transform data-[state=active]:scale-105 font-medium !border-none !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0"
+              style={{ backgroundColor: 'transparent !important', border: 'none !important', outline: 'none !important' }}
             >
               Funding
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-0 min-h-[453px]">
+          <div className="mt-0 min-h-[482px] relative overflow-hidden">
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-3 mt-0">
+            <TabsContent value="overview" className={`mt-0 animate-in ${getSlideDirection("overview")} fade-in-0 duration-500`}>
               {/* Project Basic Info */}
               <Card>
                 <CardHeader>
@@ -191,7 +218,7 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
             </Card>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3">
               <Card>
                 <CardContent className="p-2 text-center">
                   <div className="text-2xl font-bold text-green-600">{localYesVotes}</div>
@@ -220,7 +247,7 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
           </TabsContent>
 
           {/* Voting Tab */}
-          <TabsContent value="voting" className="mt-0 min-h-[454px]">
+          <TabsContent value="voting" className={`mt-0 min-h-[470px] animate-in ${getSlideDirection("voting")} fade-in-0 duration-500`}>
             <VotingCard
               projectId={parseInt(project.id)}
               voteDeadline={project.voteDeadline}
@@ -231,13 +258,15 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
               hasDelegated={project.hasDelegated}
               delegatedTo={project.delegatedTo}
               isVotingActive={isVotingActive}
+              paySchedule={project.paySchedule}
+              beingFunded={project.beingFunded}
               onVoteSuccess={handleVoteSuccess}
             />
           </TabsContent>
 
           {/* Management Tab - Only show for project owner */}
           {isProjectOwner && (
-            <TabsContent value="management" className="mt-0 min-h-[454px]">
+            <TabsContent value="management" className={`mt-0 min-h-[470px] animate-in ${getSlideDirection("management")} fade-in-0 duration-500`}>
               <ProjectManagementButtons
                 projectId={parseInt(project.id)}
                 projectOwner={project.projectOwner}
@@ -255,7 +284,7 @@ export function ProjectDetailsModal({ children, project }: ProjectDetailsModalPr
           )}
 
           {/* Funding Tab */}
-          <TabsContent value="funding" className="space-y-6 mt-0 min-h-[454px]">
+          <TabsContent value="funding" className={`mt-0 min-h-[470px] animate-in ${getSlideDirection("funding")} fade-in-0 duration-500`}>
             <Card>
               <CardHeader>
                 <CardTitle>Funding Details</CardTitle>
